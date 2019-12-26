@@ -45,6 +45,14 @@ const ItemCtrl = (function() {
 
       return newItem;
     },
+    getTotalCalories: function() {
+      data.totalCalories = data.items.reduce((a, b) => a + b.calories, 0);
+      return data.totalCalories;
+    },
+    updateTotalCalories: function(calories) {
+      data.totalCalories += calories;
+      return data.totalCalories;
+    },
     logData: function() {
       return data;
     }
@@ -57,7 +65,8 @@ const UICtrl = (function() {
     itemList: "#item-list",
     addBtn: ".add-btn",
     itemNameInput: "#item-name",
-    itemCaloriesInput: "#item-calories"
+    itemCaloriesInput: "#item-calories",
+    totalCalories: ".total-calories"
   };
 
   // Public methods
@@ -92,6 +101,9 @@ const UICtrl = (function() {
       // Insert into item list
       document.querySelector(UISelectors.itemList).appendChild(li);
     },
+    updateCalories: function(calories) {
+      document.querySelector(UISelectors.totalCalories).innerText = calories;
+    },
     clearInputs: function() {
       document.querySelector(UISelectors.itemNameInput).value = "";
       document.querySelector(UISelectors.itemCaloriesInput).value = "";
@@ -108,6 +120,7 @@ const UICtrl = (function() {
     showList: function() {
       document.querySelector(UISelectors.itemList).style.display = "block";
     },
+    toggleEditMode: function() {},
     getSelectors: function() {
       return UISelectors;
     }
@@ -138,7 +151,11 @@ const App = (function(ItemCtrl, UICtrl) {
       const newItem = ItemCtrl.addItem(input.name, input.calories);
     }
 
+    // Add item to UI list
     UICtrl.addListItem(newItem);
+    // Update Calories
+    UICtrl.updateCalories(ItemCtrl.updateTotalCalories(newItem.calories));
+    // Clear Fields
     UICtrl.clearInputs();
 
     e.preventDefault();
@@ -155,6 +172,7 @@ const App = (function(ItemCtrl, UICtrl) {
       } else {
         // Populate list with items
         UICtrl.populateItemList(items);
+        UICtrl.updateCalories(ItemCtrl.getTotalCalories());
       }
 
       // Load event listeners
