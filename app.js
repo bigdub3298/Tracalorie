@@ -12,9 +12,9 @@ const ItemCtrl = (function() {
   // Data Structure / State
   const data = {
     items: [
-      // { id: 0, name: "Steak Dinner", calories: 1200 },
-      // { id: 1, name: "Cookie", calories: 400 },
-      // { id: 2, name: "Eggs", calories: 300 }
+      { id: 0, name: "Steak Dinner", calories: 1200 },
+      { id: 1, name: "Cookie", calories: 400 },
+      { id: 2, name: "Eggs", calories: 300 }
     ],
     currentItem: null,
     totalCalories: 0
@@ -24,6 +24,15 @@ const ItemCtrl = (function() {
   return {
     getItems: function() {
       return data.items;
+    },
+    getItemById: function(id) {
+      for (let item of data.items) {
+        if (item.id === id) {
+          data.currentItem = item;
+          return item;
+        }
+      }
+      return null;
     },
     addItem: function(name, calories) {
       let ID;
@@ -64,6 +73,9 @@ const UICtrl = (function() {
   const UISelectors = {
     itemList: "#item-list",
     addBtn: ".add-btn",
+    deleteBtn: ".delete-btn",
+    editBtn: ".edit-btn",
+    backBtn: ".back-btn",
     itemNameInput: "#item-name",
     itemCaloriesInput: "#item-calories",
     totalCalories: ".total-calories"
@@ -114,13 +126,41 @@ const UICtrl = (function() {
         calories: document.querySelector(UISelectors.itemCaloriesInput).value
       };
     },
+    updateItemInput: function(item) {
+      document.querySelector(UISelectors.itemNameInput).value = item.name;
+      document.querySelector(UISelectors.itemCaloriesInput).value =
+        item.calories;
+    },
     hideList: function() {
       document.querySelector(UISelectors.itemList).style.display = "none";
     },
     showList: function() {
       document.querySelector(UISelectors.itemList).style.display = "block";
     },
-    toggleEditMode: function() {},
+    toggleEditMode: function() {
+      const editBtn = document.querySelector(UISelectors.editBtn);
+      const deleteBtn = document.querySelector(UISelectors.deleteBtn);
+      const addBtn = document.querySelector(UISelectors.addBtn);
+      const backBtn = document.querySelector(UISelectors.backBtn);
+      const itemList = document.querySelector(UISelectors.itemList);
+
+      editBtn.style.display =
+        editBtn.style.display === "inline-block" ? "none" : "inline-block";
+      deleteBtn.style.display =
+        deleteBtn.style.display === "inline-block" ? "none" : "inline-block";
+      addBtn.style.display =
+        addBtn.style.display === "inline-block" ? "none" : "inline-block";
+      backBtn.style.display =
+        backBtn.style.display === "inline-block" ? "none" : "inline-block";
+      itemList.style.pointerEvents =
+        itemList.style.pointerEvents === "none" ? "auto" : "none";
+    },
+    hideEditMode: function() {
+      document.querySelector(UISelectors.addBtn).style.display = "inline-block";
+      document.querySelector(UISelectors.editBtn).style.display = "none";
+      document.querySelector(UISelectors.deleteBtn).style.display = "none";
+      document.querySelector(UISelectors.backBtn).style.display = "none";
+    },
     getSelectors: function() {
       return UISelectors;
     }
@@ -134,10 +174,18 @@ const App = (function(ItemCtrl, UICtrl) {
     // Get UI selectors
     const UISelectors = UICtrl.getSelectors();
 
+    // hide edit buttons
+    document.addEventListener("DOMContentLoaded", UICtrl.hideEditMode);
+
     // Add item event
     document
       .querySelector(UISelectors.addBtn)
       .addEventListener("click", itemAddSubmit);
+
+    // Edit item event
+    document
+      .querySelector(UISelectors.itemList)
+      .addEventListener("click", itemUpdateSubmit);
   };
 
   // Add item submit
@@ -159,6 +207,18 @@ const App = (function(ItemCtrl, UICtrl) {
     UICtrl.clearInputs();
 
     e.preventDefault();
+  };
+
+  const itemUpdateSubmit = function(e) {
+    if (e.target.classList.contains("edit-item")) {
+      const id = parseInt(
+        e.target.parentElement.parentElement.id.split("-")[1]
+      );
+
+      const itemToEdit = ItemCtrl.getItemById(id);
+      UICtrl.toggleEditMode();
+      UICtrl.updateItemInput(itemToEdit);
+    }
   };
 
   // Public methods
