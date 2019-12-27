@@ -28,7 +28,6 @@ const ItemCtrl = (function() {
     getItemById: function(id) {
       for (let item of data.items) {
         if (item.id === id) {
-          data.currentItem = item;
           return item;
         }
       }
@@ -53,6 +52,12 @@ const ItemCtrl = (function() {
       data.items.push(newItem);
 
       return newItem;
+    },
+    setCurrentItem: function(item) {
+      data.currentItem = item;
+    },
+    clearCurrentItem: function() {
+      data.currentItem = null;
     },
     getTotalCalories: function() {
       data.totalCalories = data.items.reduce((a, b) => a + b.calories, 0);
@@ -186,6 +191,11 @@ const App = (function(ItemCtrl, UICtrl) {
     document
       .querySelector(UISelectors.itemList)
       .addEventListener("click", itemUpdateSubmit);
+
+    // Back event
+    document
+      .querySelector(UISelectors.backBtn)
+      .addEventListener("click", backSubmit);
   };
 
   // Add item submit
@@ -216,9 +226,16 @@ const App = (function(ItemCtrl, UICtrl) {
       );
 
       const itemToEdit = ItemCtrl.getItemById(id);
+      ItemCtrl.setCurrentItem(itemToEdit);
       UICtrl.toggleEditMode();
       UICtrl.updateItemInput(itemToEdit);
     }
+  };
+
+  const backSubmit = function() {
+    UICtrl.toggleEditMode();
+    UICtrl.clearInputs();
+    ItemCtrl.clearCurrentItem();
   };
 
   // Public methods
