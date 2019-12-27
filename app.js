@@ -37,6 +37,10 @@ const StorageCtrl = (function() {
       );
 
       localStorage.setItem("items", JSON.stringify(items));
+    },
+    clearItemsFromStorage: function() {
+      let items = [];
+      localStorage.setItem("items", JSON.stringify(items));
     }
   };
 })();
@@ -118,6 +122,12 @@ const ItemCtrl = (function() {
       data.totalCalories += calories;
       return data.totalCalories;
     },
+    clearTotalCalories: function() {
+      data.totalCalories = 0;
+    },
+    clearItems: function() {
+      data.items = StorageCtrl.loadItemsFromStorage();
+    },
     logData: function() {
       return data;
     }
@@ -132,6 +142,7 @@ const UICtrl = (function() {
     deleteBtn: ".delete-btn",
     editBtn: ".edit-btn",
     backBtn: ".back-btn",
+    clearBtn: ".clear-btn",
     itemNameInput: "#item-name",
     itemCaloriesInput: "#item-calories",
     totalCalories: ".total-calories"
@@ -192,6 +203,12 @@ const UICtrl = (function() {
     },
     showList: function() {
       document.querySelector(UISelectors.itemList).style.display = "block";
+    },
+    clearList: function() {
+      const ul = document.querySelector(UISelectors.itemList);
+      while (ul.firstChild) {
+        ul.removeChild(ul.firstChild);
+      }
     },
     updateItemList: function(item) {
       const li = document.querySelector(`#item-${item.id}`);
@@ -265,6 +282,11 @@ const App = (function(ItemCtrl, UICtrl, StorageCtrl) {
     document
       .querySelector(UISelectors.editBtn)
       .addEventListener("click", itemUpdateSubmit);
+
+    // Clear all event
+    document
+      .querySelector(UISelectors.clearBtn)
+      .addEventListener("click", itemClearAllSubmit);
   };
 
   // Add item submit
@@ -339,6 +361,18 @@ const App = (function(ItemCtrl, UICtrl, StorageCtrl) {
     UICtrl.updateItemList(newItem);
     // update total calories
     UICtrl.updateCalories(totalCalories);
+  };
+
+  const itemClearAllSubmit = function() {
+    StorageCtrl.clearItemsFromStorage();
+
+    ItemCtrl.clearItems();
+    ItemCtrl.clearTotalCalories();
+    ItemCtrl.clearCurrentItem();
+
+    UICtrl.updateCalories(0);
+    UICtrl.clearInputs();
+    UICtrl.clearList();
   };
 
   // Public methods
