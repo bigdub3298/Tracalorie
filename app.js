@@ -63,6 +63,17 @@ const ItemCtrl = (function() {
       data.items = data.items.filter(item => item.id !== data.currentItem.id);
       return data.currentItem;
     },
+    updateCurrentItem(input) {
+      data.totalCalories =
+        data.totalCalories + (input.calories - data.currentItem.calories);
+      data.currentItem.name = input.name;
+      data.currentItem.calories = input.calories;
+
+      return {
+        newItem: data.currentItem,
+        totalCalories: data.totalCalories
+      };
+    },
     getTotalCalories: function() {
       data.totalCalories = data.items.reduce((a, b) => a + b.calories, 0);
       return data.totalCalories;
@@ -146,6 +157,14 @@ const UICtrl = (function() {
     showList: function() {
       document.querySelector(UISelectors.itemList).style.display = "block";
     },
+    updateItemList: function(item) {
+      const li = document.querySelector(`#item-${item.id}`);
+
+      li.innerHTML = `<strong>${item.name}: </strong> <em>${item.calories} Calories</em>
+      <a href="#" class="secondary-content">
+        <i class="edit-item fa fa-pencil"></i>
+      </a>`;
+    },
     toggleEditMode: function() {
       const editBtn = document.querySelector(UISelectors.editBtn);
       const deleteBtn = document.querySelector(UISelectors.deleteBtn);
@@ -205,6 +224,11 @@ const App = (function(ItemCtrl, UICtrl) {
     document
       .querySelector(UISelectors.deleteBtn)
       .addEventListener("click", itemDeleteSubmit);
+
+    // Update item event
+    document
+      .querySelector(UISelectors.editBtn)
+      .addEventListener("click", itemUpdateSubmit);
   };
 
   // Add item submit
@@ -257,6 +281,22 @@ const App = (function(ItemCtrl, UICtrl) {
     UICtrl.updateCalories(ItemCtrl.updateTotalCalories(-itemToDelete.calories));
     UICtrl.clearInputs();
     UICtrl.toggleEditMode();
+  };
+
+  const itemUpdateSubmit = function() {
+    const input = UICtrl.getItemInput();
+
+    // update item
+    let { newItem, totalCalories } = ItemCtrl.updateCurrentItem(input);
+    // Clear current item
+    ItemCtrl.clearCurrentItem();
+
+    UICtrl.clearInputs();
+    UICtrl.toggleEditMode();
+    // update item list
+    UICtrl.updateItemList(newItem);
+    // update total calories
+    UICtrl.updateCalories(totalCalories);
   };
 
   // Public methods
